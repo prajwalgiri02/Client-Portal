@@ -31,6 +31,8 @@ export const metadata: Metadata = {
   },
 };
 
+import ReactQueryProvider from "@/providers/ReactQueryProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        {children}
+        <ReactQueryProvider>{children}</ReactQueryProvider>
         <Analytics />
       </body>
     </html>

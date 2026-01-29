@@ -75,13 +75,18 @@ export function useToast() {
   const context = React.useContext(ToastContext);
   if (!context) throw new Error("useToast must be used within ToastProvider");
 
-  return {
-    toast: (message: string, options?: { title?: string; type?: ToastType }) => {
-      context.addToast({ message, ...options });
-    },
-    success: (message: string, title?: string) => context.addToast({ message, title, type: "success" }),
-    error: (message: string, title?: string) => context.addToast({ message, title, type: "error" }),
-    info: (message: string, title?: string) => context.addToast({ message, title, type: "info" }),
-    warning: (message: string, title?: string) => context.addToast({ message, title, type: "warning" }),
-  };
+  const { addToast } = context;
+
+  return React.useMemo(
+    () => ({
+      toast: (message: string, options?: { title?: string; type?: ToastType }) => {
+        addToast({ message, ...options });
+      },
+      success: (message: string, title?: string) => addToast({ message, title, type: "success" }),
+      error: (message: string, title?: string) => addToast({ message, title, type: "error" }),
+      info: (message: string, title?: string) => addToast({ message, title, type: "info" }),
+      warning: (message: string, title?: string) => addToast({ message, title, type: "warning" }),
+    }),
+    [addToast],
+  );
 }
