@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ProductForm } from "../../components/ProductForm";
 import { productsApi } from "@/lib/api/products";
-import { PageLoader, Breadcrumb } from "@/components/admin-ui";
+import { PageLoader } from "@/components/admin-ui";
 
 export default function EditProductPage() {
   const params = useParams();
@@ -24,7 +24,6 @@ export default function EditProductPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <Breadcrumb items={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Products", href: "/admin/products" }, { label: data.title }]} />
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Edit Product</h1>
         <p className="text-muted-foreground text-sm">Update product details, media assets, and order form configuration.</p>
       </div>

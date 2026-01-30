@@ -4,7 +4,7 @@ import * as React from "react";
 import { Plus, Search, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Input, Table, Badge, Card, CardHeader, CardTitle, CardContent, Breadcrumb, useToast, ConfirmModal } from "@/components/admin-ui";
+import { Button, Input, Table, Badge, Card, CardHeader, CardTitle, CardContent, useToast, ConfirmModal } from "@/components/admin-ui";
 import { productsApi, normalizeList, type Product } from "@/lib/api/products";
 
 export default function ProductsPage() {
@@ -58,7 +58,6 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
-          <Breadcrumb items={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Products" }]} />
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Products</h1>
           <p className="text-muted-foreground text-sm">Create, manage and organize your product catalog.</p>
         </div>

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { UserForm } from "../../components/UserForm";
 import { CONFIG } from "@/lib/config";
 import Cookies from "js-cookie";
-import { PageLoader, useToast, Breadcrumb } from "@/components/admin-ui";
+import { PageLoader, useToast } from "@/components/admin-ui";
 
 export default function EditUserPage() {
   const { id } = useParams();
@@ -41,7 +41,6 @@ export default function EditUserPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <Breadcrumb items={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Users", href: "/admin/users" }, { label: initialData.name }]} />
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Edit User</h1>
         <p className="text-muted-foreground text-sm">Update profile details and update system permissions.</p>
       </div>

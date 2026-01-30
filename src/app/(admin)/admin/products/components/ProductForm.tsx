@@ -122,8 +122,6 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { success, error } = useToast();
-  const [activeTab, setActiveTab] = React.useState("general");
-
   const [product, setProduct] = React.useState<ProductData>(
     initialData || {
       title: "",
@@ -159,7 +157,6 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
   const handleSave = async () => {
     if (!product.title) {
       error("Product title is required.");
-      setActiveTab("general");
       return;
     }
     saveMutation.mutate(product);
@@ -168,50 +165,35 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
   const loading = saveMutation.isPending;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-      {/* Navigation Sidebar */}
-      <div className="lg:col-span-1">
-        <Card className="sticky top-8 border-none shadow-sm h-fit">
-          <nav className="p-2 flex flex-col gap-1">
-            {[
-              { id: "general", label: "General Info", icon: Settings },
-              { id: "media", label: "Media Assets", icon: ImageIcon },
-              { id: "specs", label: "Specifications", icon: Layers },
-              { id: "order", label: "Order Form", icon: FileText },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === tab.id
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <tab.icon className="h-4 w-4" />
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-          <div className="p-4 border-t mt-4 flex flex-col gap-2">
-            <Button loading={loading} onClick={handleSave} className="w-full" leftIcon={<Save className="h-4 w-4" />}>
-              {isEdit ? "Update Product" : "Save Product"}
-            </Button>
-            <Button variant="ghost" onClick={() => router.push("/admin/products")} className="w-full">
-              Cancel
-            </Button>
-          </div>
-        </Card>
+    <div className="space-y-8">
+      {/* Top Header with Actions */}
+      <div className="flex items-center justify-between gap-4 py-4 sticky top-0 bg-background/80 backdrop-blur-md z-40 border-b -mx-6 px-6 sm:-mx-8 sm:px-8 md:-mx-10 md:px-10">
+        <div className="flex flex-col">
+          <h2 className="text-lg font-bold">Product Details</h2>
+          <p className="text-xs text-muted-foreground italic">Scroll to edit all sections</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" onClick={() => router.push("/admin/products")} disabled={loading}>
+            Cancel
+          </Button>
+          <Button loading={loading} onClick={handleSave} leftIcon={<Save className="h-4 w-4" />} className="shadow-lg shadow-primary/20">
+            {isEdit ? "Update Product" : "Save Product"}
+          </Button>
+        </div>
       </div>
 
-      {/* Content Area */}
-      <div className="lg:col-span-3 space-y-6">
-        {activeTab === "general" && (
-          <Card className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <CardHeader>
-              <CardTitle>Basic Details</CardTitle>
+      {/* Stacked Sections */}
+      <div className="space-y-10 max-w-5xl">
+        {/* General Details */}
+        <section id="general">
+          <Card className="border-none shadow-sm overflow-hidden bg-card/50 backdrop-blur-sm">
+            <CardHeader className="border-b bg-muted/20">
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-primary" />
+                Basic Details
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 pt-6">
               <Input
                 label="Product Title"
                 value={product.title}
@@ -220,7 +202,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input label="SKU" value={product.sku} onChange={(e) => handleUpdate({ sku: e.target.value })} placeholder="e.g. BC-001" />
-                <div className="pt-8">
+                <div className="flex items-end pb-1.5 px-1">
                   <Toggle label="Mark as Active" checked={product.active} onChange={(e: any) => handleUpdate({ active: e.target.checked })} />
                 </div>
               </div>
@@ -229,75 +211,28 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 value={product.baseDescription}
                 onChange={(e) => handleUpdate({ baseDescription: e.target.value })}
                 placeholder="Write a detailed description for this product..."
-                rows={6}
+                rows={8}
               />
             </CardContent>
           </Card>
-        )}
+        </section>
 
-        {activeTab === "specs" && (
-          <Card className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/30">
-              <CardTitle>Specifications</CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  handleUpdate({
-                    specs: [
-                      ...product.specs,
-                      { id: Math.random().toString(36), label: "", valueType: "text", valueText: "", order: product.specs.length },
-                    ],
-                  })
-                }
-                leftIcon={<Plus className="h-4 w-4" />}
-              >
-                Add Spec
-              </Button>
-            </CardHeader>
-            <CardContent className="p-6">
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={(e) => {
-                  const { active, over } = e;
-                  if (over && active.id !== over.id) {
-                    const oldIdx = product.specs.findIndex((s) => s.id === active.id);
-                    const newIdx = product.specs.findIndex((s) => s.id === over.id);
-                    handleUpdate({ specs: arrayMove(product.specs, oldIdx, newIdx) });
-                  }
-                }}
-              >
-                <SortableContext items={product.specs} strategy={verticalListSortingStrategy}>
-                  <div className="space-y-3">
-                    {product.specs.map((spec) => (
-                      <SortableSpecItem
-                        key={spec.id}
-                        spec={spec}
-                        onUpdate={(id: string, updates: any) =>
-                          handleUpdate({ specs: product.specs.map((s) => (s.id === id ? { ...s, ...updates } : s)) })
-                        }
-                        onRemove={(id: string) => handleUpdate({ specs: product.specs.filter((s) => s.id !== id) })}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            </CardContent>
-          </Card>
-        )}
-
-        {activeTab === "media" && (
-          <Card className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/30">
-              <CardTitle>Media Assets</CardTitle>
+        {/* Media Assets */}
+        <section id="media">
+          <Card className="border-none shadow-sm overflow-hidden bg-card/50 backdrop-blur-sm">
+            <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/20">
+              <CardTitle className="flex items-center gap-2">
+                <ImageIcon className="h-5 w-5 text-primary" />
+                Media Assets
+              </CardTitle>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => document.getElementById("media-upload-form")?.click()}
                 leftIcon={<Upload className="h-4 w-4" />}
+                className="bg-background"
               >
-                Upload
+                Upload Files
               </Button>
               <input
                 id="media-upload-form"
@@ -320,36 +255,123 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
               />
             </CardHeader>
             <CardContent className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {product.media.map((m) => (
-                  <div key={m.id} className="relative group aspect-square rounded-lg border overflow-hidden bg-muted/20">
+                  <div
+                    key={m.id}
+                    className="relative group aspect-square rounded-xl border-2 border-dashed border-muted bg-muted/10 overflow-hidden flex items-center justify-center"
+                  >
                     {m.previewUrl ? (
-                      <img src={m.previewUrl} alt={m.name} className="w-full h-full object-cover" />
+                      <img src={m.previewUrl} alt={m.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                     ) : (
-                      <div className="p-4 flex flex-col items-center justify-center text-xs text-center">
-                        <FileText className="h-6 w-6 mb-2" />
+                      <div className="p-4 flex flex-col items-center justify-center text-[10px] text-center text-muted-foreground uppercase font-bold tracking-widest">
+                        <FileText className="h-8 w-8 mb-2 opacity-20" />
                         {m.name}
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Button variant="danger" size="icon" onClick={() => handleUpdate({ media: product.media.filter((item) => item.id !== m.id) })}>
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center p-4">
+                      <Button
+                        variant="danger"
+                        size="icon"
+                        className="rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                        onClick={() => handleUpdate({ media: product.media.filter((item) => item.id !== m.id) })}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                 ))}
+                {product.media.length === 0 && (
+                  <div className="col-span-full py-12 flex flex-col items-center justify-center border-2 border-dashed rounded-xl bg-muted/5">
+                    <ImageIcon className="h-10 w-10 text-muted-foreground opacity-20 mb-3" />
+                    <p className="text-sm text-muted-foreground font-medium">No media uploaded yet</p>
+                    <button
+                      onClick={() => document.getElementById("media-upload-form")?.click()}
+                      className="text-xs text-primary font-bold mt-2 hover:underline"
+                    >
+                      Browse Files
+                    </button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
-        )}
+        </section>
 
-        {activeTab === "order" && (
-          <Card className="animate-in fade-in slide-in-from-right-4 duration-300">
-            <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/30">
-              <CardTitle>Order Form Builder</CardTitle>
+        {/* Specifications */}
+        <section id="specs">
+          <Card className="border-none shadow-sm overflow-hidden bg-card/50 backdrop-blur-sm">
+            <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/20">
+              <CardTitle className="flex items-center gap-2">
+                <Layers className="h-5 w-5 text-primary" />
+                Specifications
+              </CardTitle>
               <Button
                 variant="outline"
                 size="sm"
+                className="bg-background"
+                onClick={() =>
+                  handleUpdate({
+                    specs: [
+                      ...product.specs,
+                      { id: Math.random().toString(36), label: "", valueType: "text", valueText: "", order: product.specs.length },
+                    ],
+                  })
+                }
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Add Row
+              </Button>
+            </CardHeader>
+            <CardContent className="p-6">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={(e) => {
+                  const { active, over } = e;
+                  if (over && active.id !== over.id) {
+                    const oldIdx = product.specs.findIndex((s) => s.id === active.id);
+                    const newIdx = product.specs.findIndex((s) => s.id === over.id);
+                    handleUpdate({ specs: arrayMove(product.specs, oldIdx, newIdx) });
+                  }
+                }}
+              >
+                <SortableContext items={product.specs} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-4">
+                    {product.specs.map((spec) => (
+                      <SortableSpecItem
+                        key={spec.id}
+                        spec={spec}
+                        onUpdate={(id: string, updates: any) =>
+                          handleUpdate({ specs: product.specs.map((s) => (s.id === id ? { ...s, ...updates } : s)) })
+                        }
+                        onRemove={(id: string) => handleUpdate({ specs: product.specs.filter((s) => s.id !== id) })}
+                      />
+                    ))}
+                    {product.specs.length === 0 && (
+                      <div className="py-8 text-center text-sm text-muted-foreground italic border border-dashed rounded-lg bg-muted/5">
+                        Add technical specs or product properties here
+                      </div>
+                    )}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Order Form Builder */}
+        <section id="order">
+          <Card className="border-none shadow-sm overflow-hidden bg-card/50 backdrop-blur-sm">
+            <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/20">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Custom Order Fields
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-background"
                 onClick={() =>
                   handleUpdate({
                     orderFields: [
@@ -376,9 +398,13 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               {product.orderFields.map((field) => (
-                <div key={field.id} className="p-4 border rounded-xl flex items-center justify-between gap-4">
-                  <div className="flex-1 grid grid-cols-2 gap-4">
+                <div
+                  key={field.id}
+                  className="p-5 bg-background border border-border/50 rounded-xl flex items-center justify-between gap-6 hover:shadow-md transition-all group"
+                >
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
+                      label="Field Label"
                       value={field.label}
                       onChange={(e) =>
                         handleUpdate({
@@ -389,30 +415,50 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                       }
                     />
                     <Select
+                      label="Input Type"
                       value={field.type}
                       onChange={(e: any) =>
                         handleUpdate({ orderFields: product.orderFields.map((f) => (f.id === field.id ? { ...f, type: e.target.value } : f)) })
                       }
                       options={[
-                        { label: "Text", value: "text" },
-                        { label: "Number", value: "number" },
-                        { label: "Select", value: "select" },
+                        { label: "Text Input", value: "text" },
+                        { label: "Rich Textarea", value: "textarea" },
+                        { label: "Number Input", value: "number" },
+                        { label: "Select Dropdown", value: "select" },
+                        { label: "Radio Selection", value: "radio" },
+                        { label: "Checkbox Toggle", value: "checkbox" },
+                        { label: "File Upload", value: "file" },
                       ]}
                     />
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-destructive"
+                    className="text-destructive mt-6 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={() => handleUpdate({ orderFields: product.orderFields.filter((f) => f.id !== field.id) })}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
+              {product.orderFields.length === 0 && (
+                <div className="py-8 text-center text-sm text-muted-foreground italic border border-dashed rounded-lg bg-muted/5">
+                  Define what information the customer needs to provide when ordering
+                </div>
+              )}
             </CardContent>
           </Card>
-        )}
+        </section>
+      </div>
+
+      {/* Bottom Actions */}
+      <div className="pt-8 flex items-center justify-end gap-3 border-t max-w-5xl">
+        <Button variant="ghost" onClick={() => router.push("/admin/products")} disabled={loading}>
+          Discard Changes
+        </Button>
+        <Button loading={loading} onClick={handleSave} size="lg" className="px-8 shadow-xl shadow-primary/30">
+          {isEdit ? "Update Product" : "Save Product"}
+        </Button>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Plus, Search, RefreshCw, User as UserIcon, Mail, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button, Input, Table, Badge, Card, CardHeader, CardTitle, CardContent, Breadcrumb, useToast, ConfirmModal } from "@/components/admin-ui";
+import { Button, Input, Table, Badge, Card, CardHeader, CardTitle, CardContent, useToast, ConfirmModal } from "@/components/admin-ui";
 import { CONFIG } from "@/lib/config";
 import Cookies from "js-cookie";
 
@@ -83,7 +83,6 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
-          <Breadcrumb items={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Users" }]} />
           <h1 className="text-3xl font-bold tracking-tight text-foreground">User Management</h1>
           <p className="text-muted-foreground text-sm">Create and manage administrative and client users.</p>
         </div>
