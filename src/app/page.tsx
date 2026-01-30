@@ -4,8 +4,15 @@ import Link from "next/link";
 import { ArrowRight, ShoppingCart, LayoutDashboard, ShieldCheck, Zap } from "lucide-react";
 import { Header } from "@/components/header";
 import { CONFIG } from "@/lib/config";
+import { useUser } from "@/hooks/use-user";
 
 export default function LandingPage() {
+  const { data: user } = useUser();
+  const isAdmin = user?.roles.includes("admin");
+  const dashboardHref = isAdmin ? "/admin/dashboard" : "/dashboard";
+  const portalHref = user ? dashboardHref : "/login";
+  const signupHref = user ? dashboardHref : "/register";
+
   return (
     <div className="min-h-screen bg-[#FDFDFF] flex flex-col font-sans">
       <Header />
@@ -37,10 +44,10 @@ export default function LandingPage() {
 
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                   <Link
-                    href="/login"
+                    href={portalHref}
                     className="group px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-bold text-lg transition-all shadow-xl shadow-primary/20 flex items-center gap-2 hover:scale-[1.02] active:scale-95"
                   >
-                    Access Portal
+                    {user ? "Go to Dashboard" : "Access Portal"}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                   <a
@@ -161,10 +168,10 @@ export default function LandingPage() {
                 <h2 className="text-4xl lg:text-5xl font-bold text-white leading-tight">Ready to optimize your workflow?</h2>
                 <p className="text-gray-400 text-lg">Join hundreds of partners who have already upgraded their ordering experience.</p>
                 <Link
-                  href="/register"
+                  href={signupHref}
                   className="inline-flex px-10 py-5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-bold text-xl transition-all hover:scale-[1.05] active:scale-95 shadow-2xl shadow-primary/20"
                 >
-                  Get Started Now
+                  {user ? "Go to Dashboard" : "Get Started Now"}
                 </Link>
               </div>
 
