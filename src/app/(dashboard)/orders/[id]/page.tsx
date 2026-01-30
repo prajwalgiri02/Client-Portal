@@ -20,7 +20,6 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
 
   return (
     <div className="min-h-screen bg-background flex flex-col pb-24 lg:pb-0">
-      <Header />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8">
         <button onClick={() => router.back()} className="text-primary hover:text-orange-600 font-semibold mb-6">

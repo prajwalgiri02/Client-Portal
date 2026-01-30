@@ -6,6 +6,8 @@ import Link from "next/link";
 import Cookies from "js-cookie";
 import { CONFIG } from "@/lib/config";
 
+import { Eye, EyeOff } from "lucide-react";
+
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
@@ -13,6 +15,8 @@ export default function RegisterPage() {
     password: "",
     password_confirmation: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -108,28 +112,46 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Password</label>
-              <input
-                name="password"
-                type="password"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-              />
+              <div className="relative">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none pr-12"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Confirm Password</label>
-              <input
-                name="password_confirmation"
-                type="password"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
-                placeholder="••••••••"
-                value={formData.password_confirmation}
-                onChange={handleChange}
-              />
+              <div className="relative">
+                <input
+                  name="password_confirmation"
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none pr-12"
+                  placeholder="••••••••"
+                  value={formData.password_confirmation}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
             {error && <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl animate-shake">{error}</div>}

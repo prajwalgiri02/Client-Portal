@@ -1,4 +1,5 @@
 import UserSidebar from "@/components/user-sidebar";
+import { BottomNav } from "@/components/bottom-nav";
 import { getMe } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -32,8 +33,9 @@ export default async function UserLayout({ children }: { children: React.ReactNo
             </div>
           </div>
         </header>
-        <main className="flex-1 p-8 md:p-12">{children}</main>
+        <main className="flex-1 p-8 md:p-12 pb-24 lg:pb-12">{children}</main>
       </div>
+      <BottomNav />
     </div>
   );
 }
