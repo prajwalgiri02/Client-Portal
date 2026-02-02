@@ -29,7 +29,7 @@ export default function AdminLayoutShell({ children, user }: AdminLayoutShellPro
 
           {/* Scrollable Content */}
           <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 sm:p-8 md:p-10">
-            <div className="max-w-7xl mx-auto">{children}</div>
+            <div className="max-w-7xl">{children}</div>
           </main>
         </div>
       </div>

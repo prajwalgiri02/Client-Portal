@@ -12,6 +12,15 @@ interface ProductFormProps {
   loading?: boolean;
 }
 
+function LastModifiedDate({ isEditing }: { isEditing: boolean }) {
+  const [date, setDate] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    setDate(new Date().toLocaleDateString());
+  }, []);
+
+  return <p className="text-xs text-muted-foreground italic">Last modified: {isEditing ? date || "..." : "Never"}</p>;
+}
+
 export function ProductForm({ initialData, onSave, onCancel, loading }: ProductFormProps) {
   const isEditing = !!initialData;
 
@@ -107,7 +116,7 @@ export function ProductForm({ initialData, onSave, onCancel, loading }: ProductF
               </div>
             </CardContent>
             <CardFooter className="bg-muted/30 pt-6">
-              <p className="text-xs text-muted-foreground italic">Last modified: {isEditing ? new Date().toLocaleDateString() : "Never"}</p>
+              <LastModifiedDate isEditing={isEditing} />
             </CardFooter>
           </Card>
 

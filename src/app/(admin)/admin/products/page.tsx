@@ -94,22 +94,17 @@ export default function ProductsPage() {
               {
                 header: "Product Title",
                 accessorKey: "title",
-                cell: (p: Product) => (
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-foreground">{p.title}</span>
-                    <span className="text-xs text-muted-foreground">{p.sku || "No SKU"}</span>
-                  </div>
-                ),
+                cell: (p: Product) => <span className="text-sm text-foreground">{p.title}</span>,
               },
               {
-                header: "Category",
-                accessorKey: "category",
-                cell: (p: Product) => <span className="text-sm">{p.category || "N/A"}</span>,
+                header: "SKU",
+                accessorKey: "sku",
+                cell: (p: Product) => <span className="text-sm">{p.sku || "N/A"}</span>,
               },
               {
                 header: "Status",
-                accessorKey: "active",
-                cell: (p: Product) => <Badge variant={p.active ? "success" : "secondary"}>{p.active ? "Active" : "Inactive"}</Badge>,
+                accessorKey: "is_active",
+                cell: (p: Product) => <Badge variant={p.is_active ? "success" : "secondary"}>{p.is_active ? "Active" : "Inactive"}</Badge>,
               },
             ]}
             onEdit={(p: Product) => router.push(`/admin/products/edit/${p.id}`)}

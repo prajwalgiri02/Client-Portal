@@ -6,7 +6,7 @@ export interface Product {
   sku: string;
   price?: number;
   stock?: number;
-  active: boolean;
+  is_active: boolean;
   category?: string;
   created_at?: string;
   updated_at?: string;

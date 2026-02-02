@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, ShoppingCart, LayoutDashboard, ShieldCheck, Zap } from "lucide-react";
 import { Header } from "@/components/header";
@@ -7,7 +8,12 @@ import { CONFIG } from "@/lib/config";
 import { useUser } from "@/hooks/use-user";
 
 export default function LandingPage() {
+  const [year, setYear] = useState<number | null>(null);
   const { data: user } = useUser();
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
   const isAdmin = user?.roles.includes("admin");
   const dashboardHref = isAdmin ? "/admin/dashboard" : "/dashboard";
   const portalHref = user ? dashboardHref : "/login";
@@ -191,7 +197,7 @@ export default function LandingPage() {
             <span className="text-xl font-bold text-[#1A1A1A]">{CONFIG.BRAND_NAME}</span>
           </div>
           <div className="text-gray-500 text-sm">
-            © {new Date().getFullYear()} {CONFIG.BRAND_NAME}. All rights reserved.
+            © {year || "2026"} {CONFIG.BRAND_NAME}. All rights reserved.
           </div>
           <div className="flex gap-8 text-sm font-medium text-gray-600">
             <a href="#" className="hover:text-primary transition-colors">
