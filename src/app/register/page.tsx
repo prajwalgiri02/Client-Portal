@@ -5,38 +5,48 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Cookies from "js-cookie";
 import { CONFIG } from "@/lib/config";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
-import { Eye, EyeOff } from "lucide-react";
+const registerSchema = z
+  .object({
+    name: z.string().min(1, "Full name is required"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    password_confirmation: z.string().min(8, "Confirm password is required"),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Passwords do not match",
+    path: ["password_confirmation"],
+  });
+
+type RegisterValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    password_confirmation: "",
-  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      password_confirmation: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: RegisterValues) => {
     setError("");
-
-    if (formData.password !== formData.password_confirmation) {
-      setError("Passwords do not match");
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -46,7 +56,7 @@ export default function RegisterPage() {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(values),
       });
 
       const data = await registerResponse.json();
@@ -55,12 +65,10 @@ export default function RegisterPage() {
         throw new Error(data.message || "Registration failed. Please check your details.");
       }
 
-      // If the register endpoint returns a token, log the user in automatically
       if (data.token) {
         Cookies.set("token", data.token, { expires: 7 });
         router.push("/dashboard");
       } else {
-        // Otherwise, redirect to login
         router.push("/login?message=Registration successful. Please sign in.");
       }
     } catch (err: any) {
@@ -83,44 +91,37 @@ export default function RegisterPage() {
           <h1 className="text-3xl font-bold text-gray-900 text-center mb-2">Create Account</h1>
           <p className="text-gray-500 text-center mb-8">Join the {CONFIG.BRAND_NAME} Portal</p>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Full Name</label>
               <input
-                name="name"
+                {...register("name")}
                 type="text"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+                className={`w-full px-4 py-3 rounded-xl border ${errors.name ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-primary"} transition-all outline-none focus:ring-2`}
                 placeholder="John Doe"
-                value={formData.name}
-                onChange={handleChange}
               />
+              {errors.name && <p className="text-xs text-red-500 mt-1 ml-1">{errors.name.message}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email Address</label>
               <input
-                name="email"
+                {...register("email")}
                 type="email"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+                className={`w-full px-4 py-3 rounded-xl border ${errors.email ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-primary"} transition-all outline-none focus:ring-2`}
                 placeholder="name@company.com"
-                value={formData.email}
-                onChange={handleChange}
               />
+              {errors.email && <p className="text-xs text-red-500 mt-1 ml-1">{errors.email.message}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Password</label>
               <div className="relative">
                 <input
-                  name="password"
+                  {...register("password")}
                   type={showPassword ? "text" : "password"}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none pr-12"
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.password ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-primary"} transition-all outline-none pr-12 focus:ring-2`}
                   placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
                 />
                 <button
                   type="button"
@@ -130,19 +131,17 @@ export default function RegisterPage() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {errors.password && <p className="text-xs text-red-500 mt-1 ml-1">{errors.password.message}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Confirm Password</label>
               <div className="relative">
                 <input
-                  name="password_confirmation"
+                  {...register("password_confirmation")}
                   type={showConfirmPassword ? "text" : "password"}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none pr-12"
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.password_confirmation ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-primary"} transition-all outline-none pr-12 focus:ring-2`}
                   placeholder="••••••••"
-                  value={formData.password_confirmation}
-                  onChange={handleChange}
                 />
                 <button
                   type="button"
@@ -152,6 +151,7 @@ export default function RegisterPage() {
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {errors.password_confirmation && <p className="text-xs text-red-500 mt-1 ml-1">{errors.password_confirmation.message}</p>}
             </div>
 
             {error && <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl animate-shake">{error}</div>}
@@ -159,8 +159,9 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 rounded-xl shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:hover:scale-100"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 rounded-xl shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:hover:scale-100 flex items-center justify-center gap-2"
             >
+              {loading && <Loader2 size={18} className="animate-spin" />}
               {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>

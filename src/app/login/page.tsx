@@ -5,19 +5,37 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Cookies from "js-cookie";
 import { CONFIG } from "@/lib/config";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
-import { Eye, EyeOff } from "lucide-react";
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+type LoginValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (values: LoginValues) => {
     setError("");
     setLoading(true);
 
@@ -28,7 +46,7 @@ export default function LoginPage() {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(values),
       });
 
       if (!loginResponse.ok) {
@@ -44,9 +62,9 @@ export default function LoginPage() {
       }
 
       // Save token in cookie
-      Cookies.set("token", token, { expires: 7 }); // expires in 7 days
+      Cookies.set("token", token, { expires: 7 });
 
-      // After login, fetch user to determine redirect
+      // Fetch user to determine redirect
       const userResponse = await fetch(`${CONFIG.API_URL}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -64,10 +82,8 @@ export default function LoginPage() {
 
       if (roles.includes("admin")) {
         router.push("/admin/dashboard");
-      } else if (roles.includes("client") || roles.includes("user")) {
-        router.push("/dashboard");
       } else {
-        router.push("/dashboard"); // Default fallback
+        router.push("/dashboard");
       }
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");
@@ -89,29 +105,26 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-gray-900 text-center mb-2">Welcome Back</h1>
           <p className="text-gray-500 text-center mb-8">Please enter your details to sign in</p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
               <input
+                {...register("email")}
                 type="email"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+                className={`w-full px-4 py-3 rounded-xl border ${errors.email ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-primary"} transition-all outline-none focus:ring-2`}
                 placeholder="name@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
               />
+              {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div className="relative">
                 <input
+                  {...register("password")}
                   type={showPassword ? "text" : "password"}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none pr-12"
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.password ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-primary"} transition-all outline-none pr-12 focus:ring-2`}
                   placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -121,15 +134,17 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
             </div>
 
-            {error && <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg">{error}</div>}
+            {error && <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg animate-shake">{error}</div>}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 rounded-xl shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 rounded-xl shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
             >
+              {loading && <Loader2 size={18} className="animate-spin" />}
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
@@ -144,6 +159,24 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-4px);
+          }
+          75% {
+            transform: translateX(4px);
+          }
+        }
+        .animate-shake {
+          animation: shake 0.2s ease-in-out 0s 2;
+        }
+      `}</style>
     </div>
   );
 }

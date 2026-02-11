@@ -36,7 +36,14 @@ export default function CatalogPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
-            <ProductCard key={product.id} id={product.id.toString()} name={product.title} price={Number(product.price) || 0} />
+            <ProductCard
+              key={product.id}
+              id={product.id.toString()}
+              name={product.title}
+              price={Number(product.price) || 0}
+              sku={product.sku}
+              image={product.media?.[0]?.url}
+            />
           ))}
         </div>
       )}

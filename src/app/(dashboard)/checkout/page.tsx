@@ -1,34 +1,44 @@
 "use client";
 
-import type React from "react";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { FormInput } from "@/components/form-input";
 import { PrimaryButton } from "@/components/primary-button";
+
+const checkoutSchema = z.object({
+  poNumber: z.string().min(1, "PO Number is required"),
+  neededByDate: z.string().min(1, "Needed by date is required"),
+  notes: z.string().optional().default(""),
+});
+
+type CheckoutValues = z.infer<typeof checkoutSchema>;
 
 export default function CheckoutPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    poNumber: "",
-    neededByDate: "",
-    notes: "",
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CheckoutValues>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      poNumber: "",
+      neededByDate: "",
+      notes: "",
+    },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: CheckoutValues) => {
     setIsLoading(true);
+    // Mimic API call
     setTimeout(() => {
       router.push("/confirmation");
     }, 500);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
   };
 
   const orderTotal = 209.97;
@@ -39,29 +49,19 @@ export default function CheckoutPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="bg-white border border-muted rounded-lg p-6">
               <h2 className="font-bold text-secondary text-lg mb-6">Order Details</h2>
 
-              <FormInput
-                label="PO Number"
-                id="poNumber"
-                name="poNumber"
-                placeholder="Enter your PO number"
-                value={formData.poNumber}
-                onChange={handleChange}
-                required
-              />
+              <div className="mb-4">
+                <FormInput label="PO Number" id="poNumber" {...register("poNumber")} placeholder="Enter your PO number" required />
+                {errors.poNumber && <p className="text-xs text-red-500 mt-1">{errors.poNumber.message}</p>}
+              </div>
 
-              <FormInput
-                label="Needed by Date"
-                id="neededByDate"
-                name="neededByDate"
-                type="date"
-                value={formData.neededByDate}
-                onChange={handleChange}
-                required
-              />
+              <div className="mb-4">
+                <FormInput label="Needed by Date" id="neededByDate" type="date" {...register("neededByDate")} required />
+                {errors.neededByDate && <p className="text-xs text-red-500 mt-1">{errors.neededByDate.message}</p>}
+              </div>
 
               <div className="mb-4">
                 <label htmlFor="notes" className="block text-sm font-medium text-secondary mb-2">
@@ -69,10 +69,8 @@ export default function CheckoutPage() {
                 </label>
                 <textarea
                   id="notes"
-                  name="notes"
+                  {...register("notes")}
                   placeholder="Any special instructions or notes for your order..."
-                  value={formData.notes}
-                  onChange={handleChange}
                   rows={4}
                   className="w-full px-4 py-3 border border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />

@@ -1,21 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  LayoutDashboard,
-  Users,
-  ShoppingBag,
-  DollarSign,
-  TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
-  FolderTree,
-  Receipt,
-  Table2,
-  LineChart,
-  FileText,
-  MapPin,
-} from "lucide-react";
+import { LayoutDashboard, Users, ShoppingBag, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, FolderTree, Receipt } from "lucide-react";
 
 export default function DashboardPage() {
   const stats = [
@@ -56,11 +42,7 @@ export default function DashboardPage() {
   const quickLinks = [
     { label: "Products", href: "/admin/products", icon: FolderTree },
     { label: "Orders", href: "/admin/orders", icon: Receipt },
-    { label: "Clients", href: "/admin/clients", icon: Users },
-    { label: "Vendors", href: "/admin/vendors", icon: Table2 },
-    { label: "Addresses", href: "/admin/addresses", icon: MapPin },
     { label: "Users", href: "/admin/users", icon: Users },
-    { label: "Reports", href: "#", icon: LayoutDashboard }, // Keeping Reports as placeholder
   ];
 
   return (

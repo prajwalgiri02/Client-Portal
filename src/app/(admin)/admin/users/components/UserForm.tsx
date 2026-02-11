@@ -3,9 +3,20 @@
 import * as React from "react";
 import { Save, User as UserIcon, Mail, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button, Input, Select, Card, CardHeader, CardTitle, CardContent, useToast } from "@/components/admin-ui";
 import { CONFIG } from "@/lib/config";
 import Cookies from "js-cookie";
+
+const userSchema = z.object({
+  name: z.string().min(1, "Full name is required"),
+  email: z.string().email("Invalid email address"),
+  role: z.string().min(1, "Role is required"),
+});
+
+type UserFormValues = z.infer<typeof userSchema>;
 
 interface UserData {
   id?: number;
@@ -21,32 +32,31 @@ interface UserFormProps {
 
 export function UserForm({ initialData, isEdit }: UserFormProps) {
   const router = useRouter();
-  const { success, error } = useToast();
+  const { success, error: toastError } = useToast();
   const [loading, setLoading] = React.useState(false);
 
-  const [user, setUser] = React.useState<UserData>(
-    initialData || {
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<UserFormValues>({
+    resolver: zodResolver(userSchema),
+    defaultValues: initialData || {
       name: "",
       email: "",
       role: "client",
     },
-  );
+  });
 
-  const handleUpdate = (updates: Partial<UserData>) => {
-    setUser((prev) => ({ ...prev, ...updates }));
-  };
+  const roleValue = watch("role");
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user.name || !user.email) {
-      error("Name and email are required.");
-      return;
-    }
-
+  const onSubmit = async (data: UserFormValues) => {
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      const url = isEdit ? `${CONFIG.API_URL}/api/users/${user.id}` : `${CONFIG.API_URL}/api/users`;
+      const url = isEdit ? `${CONFIG.API_URL}/api/users/${initialData?.id}` : `${CONFIG.API_URL}/api/users`;
       const method = isEdit ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -56,23 +66,26 @@ export function UserForm({ initialData, isEdit }: UserFormProps) {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-        body: JSON.stringify(user),
+        body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error("Failed to save user");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to save user");
+      }
 
-      success(`User "${user.name}" ${isEdit ? "updated" : "created"} successfully.`);
+      success(`User "${data.name}" ${isEdit ? "updated" : "created"} successfully.`);
       router.push("/admin/users");
       router.refresh();
-    } catch (err) {
-      error("An error occurred while saving. Please try again.");
+    } catch (err: any) {
+      toastError(err.message || "An error occurred while saving. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-6">
         <Card className="animate-in fade-in slide-in-from-bottom-4 duration-300">
           <CardHeader>
@@ -84,19 +97,17 @@ export function UserForm({ initialData, isEdit }: UserFormProps) {
           <CardContent className="space-y-6">
             <Input
               label="Full Name"
-              value={user.name}
-              onChange={(e) => handleUpdate({ name: e.target.value })}
+              {...register("name")}
+              error={errors.name?.message}
               placeholder="e.g. John Doe"
-              required
               leftIcon={<UserIcon className="h-4 w-4" />}
             />
             <Input
               label="Email Address"
               type="email"
-              value={user.email}
-              onChange={(e) => handleUpdate({ email: e.target.value })}
+              {...register("email")}
+              error={errors.email?.message}
               placeholder="e.g. john@example.com"
-              required
               leftIcon={<Mail className="h-4 w-4" />}
             />
           </CardContent>
@@ -114,14 +125,14 @@ export function UserForm({ initialData, isEdit }: UserFormProps) {
           <CardContent className="space-y-6">
             <Select
               label="User Role"
-              value={user.role}
-              onChange={(e: any) => handleUpdate({ role: e.target.value })}
+              value={roleValue}
+              onChange={(e: any) => setValue("role", e.target.value)}
+              error={errors.role?.message}
               options={[
                 { label: "Admin", value: "admin" },
                 { label: "Manager", value: "manager" },
                 { label: "Client", value: "client" },
               ]}
-              required
             />
             <div className="pt-4 flex flex-col gap-3">
               <Button type="submit" loading={loading} className="w-full" leftIcon={<Save className="h-4 w-4" />}>

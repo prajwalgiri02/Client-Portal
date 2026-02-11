@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ShoppingBag, Clock, Settings, LogOut, Menu, X, User as UserIcon } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, BookOpen, LogOut, Menu, X, UserCircle } from "lucide-react";
 import { useState } from "react";
 import Cookies from "js-cookie";
 import { CONFIG } from "@/lib/config";
 
 const navItems = [
   { name: "My Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Browse Catalog", href: "/catalog", icon: BookOpen },
   { name: "My Orders", href: "/orders", icon: ShoppingBag },
-  { name: "Order History", href: "/orders/history", icon: Clock },
-  { name: "Profile Settings", href: "/profile", icon: Settings },
+  { name: "My Profile", href: "/profile", icon: UserCircle },
 ];
 
 export default function UserSidebar() {

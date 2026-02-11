@@ -7,9 +7,17 @@ export interface Product {
   price?: number;
   stock?: number;
   is_active: boolean;
+  base_description?: string;
   category?: string;
   created_at?: string;
   updated_at?: string;
+  media?: Array<{
+    id: number | string;
+    url: string;
+    type: string;
+  }>;
+  specifications?: any[];
+  order_fields?: any[];
 }
 
 export function normalizeList<T>(response: any): T[] {
@@ -34,7 +42,7 @@ export const productsApi = {
 
   createProduct: (data: any) => http.post<Product>(`/api/products`, data),
 
-  updateProduct: (id: string | number, data: any) => http.put<Product>(`/api/products/${id}`, data),
+  updateProduct: (id: string | number, data: any) => http.post<Product>(`/api/products/${id}`, data),
 
   deleteProduct: (id: number) => http.delete(`/api/products/${id}`),
 };

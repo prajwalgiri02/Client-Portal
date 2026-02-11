@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Maximize2, Menu, SlidersHorizontal, Search as SearchIcon, User, LogOut, Settings } from "lucide-react";
+import { Bell, Maximize2, Menu, SlidersHorizontal, Search as SearchIcon, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -202,12 +202,6 @@ export default function AdminTopbar({ onToggleSidebar, user }: TopbarProps) {
               <Link href="/admin/profile" className="flex items-center w-full">
                 <User className="mr-3 h-4 w-4 text-muted-foreground" />
                 Profile Details
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer font-medium p-2.5">
-              <Link href="/admin/settings" className="flex items-center w-full">
-                <Settings className="mr-3 h-4 w-4 text-muted-foreground" />
-                Settings
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

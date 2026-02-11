@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, MapPin, Table2, FolderTree, Receipt } from "lucide-react";
+import { LayoutDashboard, Users, FolderTree } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -25,21 +25,11 @@ const sections: Array<{ title: string; items: Item[] }> = [
     items: [
       { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { to: "/admin/products", label: "Products", icon: FolderTree },
-      { to: "/admin/orders", label: "Orders", icon: Receipt },
-      { to: "/admin/clients", label: "Clients", icon: Users },
-      { to: "/admin/vendors", label: "Vendors", icon: Table2 },
     ],
-  },
-  {
-    title: "Operations",
-    items: [{ to: "/admin/addresses", label: "Addresses", icon: MapPin }],
   },
   {
     title: "Administration",
-    items: [
-      { to: "/admin/users", label: "Users", icon: Users },
-      { to: "/admin/profile", label: "Profile", icon: Users },
-    ],
+    items: [{ to: "/admin/users", label: "Users", icon: Users }],
   },
 ];
 

@@ -34,8 +34,8 @@
                 )}
               </div>
 
-              {product.baseDescription ? (
-                <p className="text-sm text-muted-foreground line-clamp-3 whitespace-pre-wrap">{product.baseDescription}</p>
+              {product.base_description || product.baseDescription ? (
+                <p className="text-sm text-muted-foreground line-clamp-3 whitespace-pre-wrap">{product.base_description || product.baseDescription}</p>
               ) : (
                 <p className="text-sm text-muted-foreground">No description</p>
               )}
